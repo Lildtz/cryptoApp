@@ -1,6 +1,6 @@
 package com.nh.cryptoapp.repository;
 
-import com.nh.cryptoapp.dto.CoinDTO;
+import com.nh.cryptoapp.dto.CoinTransationDTO;
 import com.nh.cryptoapp.entity.Coin;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -19,6 +19,8 @@ public class CoinRepository {
     private static String SELECT_ALL = "SELECT NAME, SUM(QUANTITY) AS QUANTITY FROM COIN GROUP BY NAME";
 
     private static String SELECT_BY_NAME = "SELECT * FROM COIN WHERE NAME = ?";
+    private static String DELETE = "DELETE FROM COIN WHERE ID = ?";
+    private static String UPDATE = "UPDATE COIN SET NAME = ?, PRICE = ?, QUANTITY = ? WHERE ID = ?";
     private final JdbcTemplate jdbcTemplate;
 
     public CoinRepository(JdbcTemplate jdbcTemplate) { this.jdbcTemplate = jdbcTemplate; }
@@ -30,17 +32,24 @@ public class CoinRepository {
                 coin.getQuantity(),
                 coin.getDateTime()
         };
-
         jdbcTemplate.update(INSERT, attr);
-
         return coin;
     }
-
-    public List<CoinDTO> getAll() {
-        return jdbcTemplate.query(SELECT_ALL, new RowMapper<CoinDTO>() {
+    public Coin update(Coin coin) {
+        Object[] attr = new Object[] {
+                coin.getName(),
+                coin.getPrice(),
+                coin.getQuantity(),
+                coin.getId()
+        };
+        jdbcTemplate.update(UPDATE, attr);
+        return coin;
+    }
+    public List<CoinTransationDTO> getAll() {
+        return jdbcTemplate.query(SELECT_ALL, new RowMapper<CoinTransationDTO>() {
             @Override
-            public CoinDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
-                CoinDTO coin = new CoinDTO();
+            public CoinTransationDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
+                CoinTransationDTO coin = new CoinTransationDTO();
                 coin.setName(rs.getString("name"));
                 coin.setQuantity(rs.getBigDecimal("quantity"));
 
@@ -64,5 +73,9 @@ public class CoinRepository {
                 return coin;
             }
         }, attr);
+    }
+
+    public int remove(int id) {
+        return jdbcTemplate.update(DELETE, id);
     }
 }

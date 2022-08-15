@@ -67,4 +67,21 @@ public class CoinController {
             return new ResponseEntity<>(error.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    @PutMapping()
+    public ResponseEntity put(@RequestBody Coin coin) {
+        try {
+            coin.setDateTime(new Timestamp(System.currentTimeMillis()));
+            return new ResponseEntity<>(coinRepository.update(coin), HttpStatus.OK);
+        } catch (Exception error) {
+            return new ResponseEntity<>(error.getMessage(), HttpStatus.NO_CONTENT);
+        }
+    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity delete(@PathVariable int id) {
+        try {
+            return new ResponseEntity<>(coinRepository.remove(id), HttpStatus.OK);
+        } catch (Exception error) {
+            return new ResponseEntity<>(error.getMessage(), HttpStatus.NO_CONTENT);
+        }
+    }
 }
