@@ -4,25 +4,19 @@ import com.nh.cryptoapp.dto.CoinTransationDTO;
 import com.nh.cryptoapp.entity.Coin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 @Repository
 @EnableAutoConfiguration
 public class CoinRepository {
 
-
+    @Autowired
     private EntityManager entityManager;
-
-    public CoinRepository(EntityManager entityManager) { this.entityManager = entityManager; }
 
     @Transactional
     public Coin insert(Coin coin) {
@@ -39,25 +33,23 @@ public class CoinRepository {
         TypedQuery<CoinTransationDTO> query = entityManager.createQuery(jpql, CoinTransationDTO.class);
         return query.getResultList();
     }
-//
-//    public List<Coin> getByName(String name) {
-//        Object[] attr = new Object[] { name };
-//        return jdbcTemplate.query(SELECT_BY_NAME, new RowMapper<Coin>() {
-//            @Override
-//            public Coin mapRow(ResultSet rs, int rowNum) throws SQLException {
-//                Coin coin = new Coin();
-//                coin.setId(rs.getInt("id"));
-//                coin.setName(rs.getString("name"));
-//                coin.setPrice(rs.getBigDecimal("price"));
-//                coin.setQuantity(rs.getBigDecimal("quantity"));
-//                coin.setDateTime(rs.getTimestamp("datetime"));
-//
-//                return coin;
-//            }
-//        }, attr);
-//    }
-//
-//    public int remove(int id) {
-//        return jdbcTemplate.update(DELETE, id);
-//    }
+
+    public List<Coin> getByName(String name) {
+        String jpql = "select c from Coin c where c.name like :name";
+        TypedQuery<Coin> query = entityManager.createQuery(jpql, Coin.class);
+        query.setParameter("name", "%" + name + "%");
+        return query.getResultList();
+    }
+
+    @Transactional
+    public boolean remove(int id) {
+        Coin coin = entityManager.find(Coin.class, id);
+
+        if (!entityManager.contains(coin)) {
+            coin = entityManager.merge(coin);
+        }
+
+        entityManager.remove(coin);
+        return true;
+    }
 }
